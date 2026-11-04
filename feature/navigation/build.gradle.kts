@@ -19,6 +19,8 @@ dependencies {
     ksp(libs.hilt.compiler)
     // Offline-Routing (BRouter-Segmente .rd5) – arbeitet nur auf lokalen Dateien.
     implementation(libs.brouter.core)
+    implementation(libs.brouter.mapaccess)
+    implementation(libs.brouter.util)
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)

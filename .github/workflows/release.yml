@@ -1,14 +1,16 @@
 name: Release
 
-# Baut bei jedem Versions-Tag (v*) die Release-APK, führt alle Tests aus und
-# veröffentlicht ein GitHub-Release mit der APK als Anhang.
+# Baut die Release-APK, führt alle Tests aus und veröffentlicht ein GitHub-Release
+# mit der APK als Anhang. Auslöser: Push eines Tags v* oder manueller Start
+# (Actions → Release → Run workflow) mit einer Versionsnummer – der Tag wird dann
+# am gewählten Branch-Stand neu angelegt.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
     inputs:
       tag:
-        description: "Bestehender Tag, z. B. v0.1.0"
+        description: "Version / Tag, z. B. v0.1.0 (wird angelegt, falls nicht vorhanden)"
         required: true
 
 permissions:
@@ -22,8 +24,6 @@ jobs:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.tag || github.ref }}
 
       - uses: actions/setup-java@v4
         with:
@@ -61,6 +61,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
           name: TET Navigator ${{ env.TAG }}
           body_path: docs/releases/${{ env.TAG }}.md
           prerelease: ${{ startsWith(env.TAG, 'v0.') }}

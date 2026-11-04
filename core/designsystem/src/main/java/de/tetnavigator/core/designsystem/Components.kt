@@ -420,7 +420,7 @@ fun BottomNavBar(tabs: List<NavTab>, selected: Int, onSelect: (Int) -> Unit, mod
 
 /** Großer Schalter-Eintrag für Einstellungen (64 dp, ganze Zeile tippbar). */
 @Composable
-fun ToggleRow(title: String, subtitle: String?, checked: Boolean, onChange: (Boolean) -> Unit, modifier: Modifier = Modifier) {
+fun ToggleRow(title: String, subtitle: String?, checked: Boolean, modifier: Modifier = Modifier, onChange: (Boolean) -> Unit) {
     val c = TetTheme.colors
     Row(
         modifier

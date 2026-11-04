@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TET Navigator</string>
+    <string name="share_target">Mit TET Navigator öffnen</string>
+
+    <!-- Allgemein -->
+    <string name="next">Weiter</string>
+    <string name="back">Zurück</string>
+    <string name="later">Später</string>
+    <string name="allow">Erlauben</string>
+    <string name="cancel">Abbrechen</string>
+    <string name="close">Schließen</string>
+    <string name="save">Speichern</string>
+    <string name="retry">Erneut versuchen</string>
+    <string name="loading">Lädt…</string>
+    <string name="reading">Datei wird gelesen…</string>
+    <string name="delete">Löschen</string>
+    <string name="delete_hold">Lang drücken zum Löschen</string>
+    <string name="long_press_hint">Zum Auslösen lang drücken</string>
+    <string name="all">Alle</string>
+    <string name="remove">Entfernen</string>
+    <string name="calculating">Berechne offline…</string>
+    <string name="waiting_gps">Warte auf GPS</string>
+
+    <!-- Navigation unten -->
+    <string name="tab_map">Karte</string>
+    <string name="tab_tracks">Tracks</string>
+    <string name="tab_logbook">Logbuch</string>
+
+    <!-- Berechtigungen -->
+    <string name="perm_header">Berechtigungen</string>
+    <string name="perm_granted">✓ Bereits erlaubt</string>
+    <string name="perm_location_title">Standort</string>
+    <string name="perm_location_text">Damit die App dich über den Trail führen kann, braucht sie deinen genauen GPS-Standort. Die Position wird nur auf dem Gerät verarbeitet und nie übertragen.</string>
+    <string name="perm_background_title">Navigation bei gesperrtem Display</string>
+    <string name="perm_background_text">Abweich-Alarm und Aufzeichnung sollen auch weiterlaufen, wenn das Display aus ist oder du kurz eine andere App öffnest. Wähle dafür „Immer zulassen“.</string>
+    <string name="perm_notifications_title">Benachrichtigungen</string>
+    <string name="perm_notifications_text">Für die laufende Navigation und den einmaligen Paket-Download zeigt die App eine dauerhafte Benachrichtigung mit Fortschritt.</string>
+    <string name="perm_bluetooth_title">Lenker-Fernbedienung</string>
+    <string name="perm_bluetooth_text">Eine Bluetooth-Fernbedienung am Lenker kann zoomen, Wegpunkte setzen und die Ansicht wechseln – ohne Handschuhe auszuziehen.</string>
+    <string name="perm_camera_title">Kamera</string>
+    <string name="perm_camera_text">Optional: Fotos für Gefahren-Pins (Furt, Erdrutsch, Tor, Sperrung) und das Reisetagebuch. Fotos bleiben auf dem Gerät.</string>
+
+    <!-- Einrichtung -->
+    <string name="setup_title">Einrichtung</string>
+    <string name="setup_step">Schritt %1$d von %2$d</string>
+    <string name="setup_welcome_title">Willkommen</string>
+    <string name="setup_welcome_text">Einmal laden, dann offline: Jetzt werden einmalig alle Karten-, Höhen-, Routing- und POI-Pakete für deine Länder heruntergeladen.</string>
+    <string name="setup_offline_hint">Danach funktioniert alles offline. Die App baut von sich aus keine Netzwerkverbindung mehr auf.</string>
+    <string name="setup_skip">Überspringen</string>
+    <string name="setup_server_text">Die Pakete liegen auf deinem eigenen Server (am PC gebaut mit tools/build-packages). Gib die Basis-URL ein, unter der die manifest.json liegt.</string>
+    <string name="setup_base_url">Basis-URL</string>
+    <string name="setup_manifest_hint">Erwartet: &lt;Basis-URL&gt;/manifest.json mit Dateiliste, Größe und SHA-256.</string>
+    <string name="setup_load_manifest">Manifest laden</string>
+    <string name="setup_countries_text">Länder wählen (Mehrfachauswahl):</string>
+    <string name="setup_missing">Fehlt: %1$s</string>
+    <string name="setup_total">Gesamt: %1$s · %2$d Dateien</string>
+    <string name="setup_free">Frei auf dem Gerät: %1$s</string>
+    <string name="setup_no_space">Zu wenig Speicher</string>
+    <string name="setup_wifi_only">Nur über WLAN</string>
+    <string name="setup_wifi_only_sub">Download startet erst im WLAN</string>
+    <string name="setup_download">Herunterladen</string>
+    <string name="setup_downloading">Lade Pakete</string>
+    <string name="setup_waiting">Warte auf Netzwerk (WLAN)…</string>
+    <string name="setup_failed">Download fehlgeschlagen</string>
+    <string name="setup_background_hint">Der Download läuft im Hintergrund weiter (Benachrichtigung) und wird nach Unterbrechung fortgesetzt. Jede Datei wird per SHA-256 geprüft.</string>
+    <string name="setup_done_title">Fertig – jetzt offline</string>
+    <string name="setup_done_text">Alle Pakete sind geprüft und gespeichert. Die Netzwerksperre ist aktiv. Als Nächstes deine TET-GPX importieren.</string>
+    <string name="setup_import_now">Jetzt GPX importieren</string>
+
+    <!-- Track-Bibliothek -->
+    <string name="tracks_title">Tracks</string>
+    <string name="tracks_subtitle">%1$d Länder · %2$d Sektionen importiert</string>
+    <string name="add_gpx">+ GPX</string>
+    <string name="tracks_empty">Noch keine Tracks. Importiere deine TET-GPX über „+ GPX“ oder „Teilen mit…“ aus dem Browser.</string>
+    <string name="sections_count">%1$d Sektionen</string>
+    <string name="percent_ridden">%1$d %% gefahren</string>
+    <string name="not_ridden">noch nicht gefahren</string>
+    <string name="gpx_days_old">GPX %1$d Tage alt</string>
+    <string name="gpx_current">GPX aktuell</string>
+    <string name="tracks_share_hint">Tipp: GPX direkt aus dem Browser über „Teilen mit…“ an die App senden</string>
+    <string name="country_subtitle">%1$d Sektionen · %2$s km · +%3$s hm</string>
+    <string name="changed">Geändert</string>
+    <string name="ridden">Gefahren</string>
+    <string name="files">Dateien</string>
+    <string name="file_info">Stand %1$s · %2$d Tage alt</string>
+    <string name="file_changed">%1$d Abschnitte gegenüber Vorversion geändert</string>
+    <string name="delete_file">Datei löschen</string>
+
+    <!-- Sektion -->
+    <string name="section_subtitle">%1$s · %2$s km · +%3$s hm</string>
+    <string name="elevation_profile">Höhenprofil</string>
+    <string name="surface">Untergrund</string>
+    <string name="surface_analyzing">Untergrund wird aus Offline-Daten ermittelt…</string>
+    <string name="surface_none">Keine Belag-Daten (POI-Paket mit way_surface fehlt)</string>
+    <string name="checks_before_start">Checks vor dem Start</string>
+    <string name="check_fuel">Tank</string>
+    <string name="check_light">Licht</string>
+    <string name="check_hazards">Gefahren</string>
+    <string name="section_changed_hint">Diese Sektion wurde in der neuen GPX-Version geändert – geänderte Abschnitte sind auf der Karte gelb.</string>
+    <string name="reverse">Rückwärts</string>
+    <string name="go">Losfahren</string>
+
+    <!-- Import -->
+    <string name="import_title">GPX Import</string>
+    <string name="choose_file">Datei wählen</string>
+    <string name="choose_file_sub">.gpx oder .zip mit mehreren Ländern</string>
+    <string name="importing">Importiere %1$s…</string>
+    <string name="preview">Vorschau</string>
+    <string name="sections">Sektionen</string>
+    <string name="waypoints">Wegpunkte</string>
+    <string name="assign_country">Land zuordnen</string>
+    <string name="detected">erkannt</string>
+    <string name="already_imported">Diese Datei ist bereits importiert und wird übersprungen.</string>
+    <string name="older_version">Ältere Version vorhanden</string>
+    <string name="older_version_text">%1$d Abschnitte geändert – gelb in der Vorschau. Fortschritt bleibt erhalten.</string>
+    <string name="do_import">Importieren</string>
+
+    <!-- Fahr-Screen -->
+    <string name="no_map_installed">Keine Offline-Karte installiert. Einstellungen → Pakete neu laden.</string>
+    <string name="on_track">Auf Track · %1$d m</string>
+    <string name="off_track">Abweichung · %1$d m</string>
+    <string name="back_to_track">Zurück zum Track</string>
+    <string name="searching_track">Suche Track…</string>
+    <string name="no_section_active">Keine Sektion aktiv – Tracks wählen</string>
+    <string name="detour_active">Umleitung aktiv · %1$s</string>
+    <string name="back_route_active">Route zum Trail · %1$s</string>
+    <string name="center">Zentrieren</string>
+    <string name="layers">Kartenebenen</string>
+    <string name="zoom_in">Hineinzoomen</string>
+    <string name="zoom_out">Herauszoomen</string>
+    <string name="osm_attribution">© OpenStreetMap-Mitwirkende</string>
+    <string name="fuel_last_station">Letzte Tankstelle in %1$s – danach %2$s km ohne. Tanken!</string>
+    <string name="fuel_out_of_range_station">Reichweite %1$s km reicht nicht bis zur nächsten Tankstelle (%2$s km)</string>
+    <string name="fuel_out_of_range">Reichweite %1$s km reicht nicht bis zum Sektionsende</string>
+    <string name="fuel_low">Tank knapp – noch %1$s km</string>
+    <string name="v_speed">Tempo</string>
+    <string name="v_section">Sektion</string>
+    <string name="v_tank">Tank</string>
+    <string name="v_light">Licht</string>
+    <string name="u_km_left">km übrig</string>
+    <string name="u_range">km Reichw.</string>
+    <string name="u_until_dark">h bis dunkel</string>
+    <string name="menu">Menü</string>
+    <string name="pin">Pin</string>
+    <string name="rec">Rec</string>
+    <string name="rec_stop">Stopp</string>
+    <string name="rec_stop_hint">Aufzeichnung beenden: lang drücken</string>
+    <string name="layer_hillshade">Schummerung</string>
+    <string name="layer_contours">Höhenlinien</string>
+    <string name="layer_surface">Untergrund-Färbung</string>
+    <string name="layer_surface_sub">Track nach Schotter / Erde / Asphalt färben</string>
+    <string name="layer_pois">Camping &amp; Versorgung</string>
+    <string name="layer_hazards">Gefahren-Pins</string>
+    <string name="day_mode">Tag-Modus</string>
+    <string name="day_mode_sub">Helles Sand-Thema für direkte Sonne</string>
+    <string name="heading_up">Heading-up (Fahrtrichtung oben)</string>
+    <string name="grade_now">Steigung hier: %1$d %%</string>
+    <string name="change_track">Track wechseln</string>
+    <string name="back_to_trail">Zurück zum Trail</string>
+    <string name="to_section_start">Zum Sektionsstart</string>
+    <string name="block_ahead">Abschnitt sperren</string>
+    <string name="refuel">Getankt</string>
+    <string name="note">Notiz</string>
+    <string name="note_hint">Was ist hier los?</string>
+    <string name="photo">Foto</string>
+    <string name="photo_taken">Foto ✓</string>
+    <string name="with_photo">Mit Foto</string>
+    <string name="pois">Camping &amp; Versorgung</string>
+    <string name="pois_sub">Offline-POIs im Umkreis von 30 km</string>
+    <string name="stages">Etappenplaner</string>
+    <string name="settings">Einstellungen</string>
+    <string name="end_navigation">Navigation beenden</string>
+    <string name="no_routing">Offline-Routing nicht verfügbar – keine BRouter-Segmente installiert.</string>
+    <string name="hazard_pin">Gefahren-Pin</string>
+    <string name="hazard_pin_sub">Wird an der aktuellen Position gesetzt</string>
+
+    <!-- Logbuch -->
+    <string name="logbook_title">Logbuch</string>
+    <string name="season">Saison %1$d</string>
+    <string name="trail_km">Trail-km</string>
+    <string name="offroad">Offroad</string>
+    <string name="ascent">Höhenmeter</string>
+    <string name="country_stamps">Länderstempel</string>
+    <string name="no_stamps">Noch keine Länder – importiere GPX oder starte eine Aufzeichnung.</string>
+    <string name="recent_rides">Letzte Fahrten</string>
+    <string name="no_rides">Noch keine Fahrten aufgezeichnet.</string>
+    <string name="ride">Fahrt</string>
+    <string name="journal">Reisetagebuch</string>
+    <string name="journal_sub">%1$d Einträge</string>
+    <string name="journal_empty">Noch keine Einträge. Notizen und Fotos setzt du im Fahr-Screen über MENÜ → Notiz.</string>
+    <string name="photo_attached">Foto angehängt</string>
+    <string name="export_gpx_pdf">Export als GPX / PDF</string>
+    <string name="export_notes">Trail-Notizen als GPX</string>
+    <string name="export_hint">Wird als lokale Datei gespeichert. Melden an den Linesman machst du selbst.</string>
+    <string name="export_done">Export gespeichert</string>
+    <string name="export_failed">Export fehlgeschlagen</string>
+
+    <!-- Etappen -->
+    <string name="avg_measured">Eigener Offroad-Schnitt: %1$d km/h</string>
+    <string name="avg_fallback">Schnitt (noch geschätzt): %1$d km/h</string>
+    <string name="hours_per_day">Fahrzeit pro Tag</string>
+    <string name="auto_plan">Automatisch planen</string>
+    <string name="new_day">Neuer Tag</string>
+    <string name="day_n">Tag %1$d · %2$s km · %3$s h · +%4$s hm</string>
+    <string name="move_up">Nach oben</string>
+    <string name="move_down">Nach unten</string>
+    <string name="unplanned">Nicht eingeplant (antippen = zum letzten Tag)</string>
+    <string name="no_poi_data">Keine POI-Pakete installiert.</string>
+
+    <!-- Einstellungen -->
+    <string name="set_navigation">Navigation</string>
+    <string name="set_deviation">Abweich-Alarm ab</string>
+    <string name="set_deviation_sub">Alarm erst nach 5 s außerhalb (Hysterese)</string>
+    <string name="set_alarm_sound">Alarm-Ton</string>
+    <string name="set_alarm_vibrate">Vibration</string>
+    <string name="set_auto_zoom">Auto-Zoom nach Tempo</string>
+    <string name="set_auto_zoom_sub">Langsam = nah, schnell = weit</string>
+    <string name="set_turn_preview">Kurven-Vorschau</string>
+    <string name="set_turn_preview_sub">Kehren mit Vibration ankündigen</string>
+    <string name="set_import">Import</string>
+    <string name="set_max_age">Alter-Warnung ab</string>
+    <string name="set_max_age_sub">Hinweis, wenn eine GPX älter ist</string>
+    <string name="set_fuel">Tank-Reichweite</string>
+    <string name="set_tank">Tankgröße</string>
+    <string name="set_consumption">Verbrauch</string>
+    <string name="set_range">Reichweite jetzt %1$d km (voll %2$d km)</string>
+    <string name="set_fallback_speed">Offroad-Schnitt (Schätzung)</string>
+    <string name="set_fallback_speed_sub">km/h – bis genug eigene Fahrten gemessen sind</string>
+    <string name="set_controls">Bedienung</string>
+    <string name="set_glove">Handschuh-Modus</string>
+    <string name="set_glove_sub">Große Tasten, Wischgesten aus, Zoom über Tasten</string>
+    <string name="set_volume_zoom">Lautstärketasten = Zoom</string>
+    <string name="set_battery">Akku-Modus</string>
+    <string name="set_battery_sub">Display dimmen, GPS alle 3 s, Restlaufzeit anzeigen</string>
+    <string name="set_remote">Lenker-Fernbedienung</string>
+    <string name="set_remote_sub">Bluetooth-Remotes senden Tastatur-Events. Aktion wählen, „Lernen“ tippen und die Taste an der Remote drücken.</string>
+    <string name="set_remote_default">Standardbelegung</string>
+    <string name="set_learn">Lernen</string>
+    <string name="set_press_key">Taste drücken…</string>
+    <string name="set_remote_reset">Belegung zurücksetzen</string>
+    <string name="set_packages">Offline-Pakete</string>
+    <string name="set_no_packages">Keine Pakete installiert</string>
+    <string name="set_offline_locked">Offline-Sperre aktiv</string>
+    <string name="set_reload_open">Neu-Laden freigegeben</string>
+    <string name="set_not_locked">Noch nicht offline</string>
+    <string name="set_reload">Pakete neu laden</string>
+    <string name="set_reload_cancel">Freigabe zurücknehmen</string>
+    <string name="set_reload_sub">Hebt die Netzwerksperre einmalig für den Einrichtungs-Assistenten auf. Nach dem Download ist sie wieder aktiv.</string>
+    <string name="set_about">Über</string>
+    <string name="set_privacy">Keine Accounts, keine Analytics, keine Cloud. Deine GPX-Dateien bleiben auf dem Gerät und werden nie weiterverteilt.</string>
+    <string name="set_licenses">Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Schriften: Saira Stencil One, Barlow Condensed, Noto Sans (SIL OFL). Routing: BRouter. Karten: MapLibre.</string>
+    <string name="set_permissions_again">Berechtigungen erneut erklären</string>
+
+    <!-- Dienst -->
+    <string name="service_title">TET Navigator</string>
+    <string name="service_text_idle">GPS aktiv</string>
+    <string name="service_channel">Navigation</string>
+</resources>

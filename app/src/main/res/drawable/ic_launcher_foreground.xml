@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Topo-Linien -->
+    <path android:strokeColor="#2A2D25" android:strokeWidth="2" android:fillColor="#00000000"
+        android:pathData="M20,40 C35,30 50,46 70,36 S90,40 92,34 M18,60 C34,52 52,66 72,56 S90,62 94,56 M22,78 C38,72 54,84 74,74 S88,80 90,76" />
+    <!-- Track -->
+    <path android:strokeColor="#FF6B1A" android:strokeWidth="7" android:strokeLineCap="round" android:fillColor="#00000000"
+        android:pathData="M36,84 C30,66 58,62 52,48 C46,34 70,30 72,22" />
+    <path android:fillColor="#FF6B1A" android:pathData="M36,90 L29,76 L36,80 L43,76 Z" />
+</vector>

@@ -66,6 +66,17 @@ Voraussetzungen: JDK 17+ und Android SDK (compileSdk 36).
 ./gradlew :app:lintDebug
 ```
 
+## Releases
+
+Ein Tag `vX.Y.Z` startet `.github/workflows/release.yml`: Tests, Netzwerk-Regel, Release-Build (R8)
+und ein GitHub-Release mit `tet-navigator-vX.Y.Z.apk` (+ SHA-256). Der Release-Text kommt aus
+`docs/releases/vX.Y.Z.md`; `v0.*`-Versionen werden als Vorabversion markiert.
+
+Für eine gleichbleibende Signatur (Updates ohne Neuinstallation) diese Repository-Secrets setzen:
+`TET_KEYSTORE_BASE64` (Keystore als Base64), `TET_KEYSTORE_PASSWORD`, `TET_KEY_ALIAS`,
+`TET_KEY_PASSWORD`. Ohne Secrets wird mit dem Debug-Schlüssel signiert. Lokal genügen die
+Umgebungsvariablen `TET_KEYSTORE_FILE`, `TET_KEYSTORE_PASSWORD`, `TET_KEY_ALIAS`, `TET_KEY_PASSWORD`.
+
 ## Erste Schritte
 
 1. Pakete am PC bauen und bereitstellen: siehe [`tools/build-packages/README.md`](tools/build-packages/README.md).

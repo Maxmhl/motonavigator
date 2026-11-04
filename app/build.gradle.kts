@@ -17,14 +17,26 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    // Release-Signatur: eigener Keystore über Umgebungsvariablen (lokal oder als
+    // GitHub-Secrets), sonst Debug-Schlüssel (Eigengebrauch, sofort installierbar).
+    val keystore = System.getenv("TET_KEYSTORE_FILE")?.let(::file)?.takeIf { it.exists() }
+    signingConfigs {
+        if (keystore != null) {
+            create("release") {
+                storeFile = keystore
+                storePassword = System.getenv("TET_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("TET_KEY_ALIAS")
+                keyPassword = System.getenv("TET_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Für den Eigengebrauch: mit dem Debug-Schlüssel signieren, damit
-            // `assembleRelease` ohne eigenen Keystore installierbar ist.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 

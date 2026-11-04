@@ -1,0 +1,69 @@
+name: Release
+
+# Baut bei jedem Versions-Tag (v*) die Release-APK, führt alle Tests aus und
+# veröffentlicht ein GitHub-Release mit der APK als Anhang.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Bestehender Tag, z. B. v0.1.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Signatur-Schlüssel (optional, aus Secrets)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.TET_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            echo "TET_KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+          else
+            echo "Kein TET_KEYSTORE_BASE64-Secret – APK wird mit dem Debug-Schlüssel des Runners signiert."
+          fi
+
+      - name: Tests, Netzwerk-Regel und Release-Build
+        env:
+          TET_KEYSTORE_PASSWORD: ${{ secrets.TET_KEYSTORE_PASSWORD }}
+          TET_KEY_ALIAS: ${{ secrets.TET_KEY_ALIAS }}
+          TET_KEY_PASSWORD: ${{ secrets.TET_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon verifyNoNetworkOutsideDownload testDebugUnitTest :app:assembleRelease
+
+      - name: APK umbenennen
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk "tet-navigator-${TAG}.apk"
+          sha256sum "tet-navigator-${TAG}.apk" > "tet-navigator-${TAG}.apk.sha256"
+
+      - name: GitHub-Release veröffentlichen
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: TET Navigator ${{ env.TAG }}
+          body_path: docs/releases/${{ env.TAG }}.md
+          prerelease: ${{ startsWith(env.TAG, 'v0.') }}
+          files: |
+            tet-navigator-${{ env.TAG }}.apk
+            tet-navigator-${{ env.TAG }}.apk.sha256

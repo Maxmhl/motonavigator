@@ -21,6 +21,8 @@ dependencies {
     implementation(libs.brouter.core)
     implementation(libs.brouter.mapaccess)
     implementation(libs.brouter.util)
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
     testImplementation(libs.junit)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)

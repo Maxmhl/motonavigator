@@ -23,14 +23,17 @@ jobs:
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
 
       - uses: android-actions/setup-android@v3
+        with:
+          # Standard wäre "tools platform-tools"; das Paket "tools" gibt es nicht mehr.
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0"
 
       - uses: gradle/actions/setup-gradle@v4
 

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Test" xmlns="http://www.topografix.com/GPX/1/1">
+  <metadata><name>TET Norway (Testdaten)</name><time>2024-05-01T10:00:00Z</time></metadata>
+  <wpt lat="60.0012" lon="10.0003"><name>Furt</name><sym>Danger</sym></wpt>
+  <trk>
+    <name>NOR Sektion 01</name>
+    <trkseg>
+      <trkpt lat="60.0000" lon="10.0000"><ele>120</ele></trkpt>
+      <trkpt lat="60.0010" lon="10.0000"><ele>125</ele></trkpt>
+      <trkpt lat="60.0020" lon="10.0010"><ele>140</ele></trkpt>
+      <trkpt lat="60.0030" lon="10.0020"><ele>150</ele><extensions><x:speed xmlns:x="urn:x">3</x:speed></extensions></trkpt>
+      <trkpt lat="60.0040" lon="10.0020"><ele>149</ele></trkpt>
+    </trkseg>
+  </trk>
+  <trk>
+    <name>NOR Sektion 02</name>
+    <trkseg>
+      <trkpt lat="60.0040" lon="10.0020"/>
+      <trkpt lat="60.0050" lon="10.0020"/>
+      <trkpt lat="60.0060" lon="10.0030"/>
+    </trkseg>
+    <trkseg>
+      <trkpt lat="60.0070" lon="10.0030"/>
+      <trkpt lat="60.0080" lon="10.0040"/>
+      <trkpt lat="60.0090" lon="10.0040"/>
+    </trkseg>
+  </trk>
+</gpx>

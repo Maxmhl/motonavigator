@@ -75,6 +75,10 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent?) {
         intent ?: return
+        if (intent.getBooleanExtra(de.tetnavigator.data.download.DownloadWorker.EXTRA_OPEN_DOWNLOADS, false)) {
+            events.openDownloads.value = true
+            intent.removeExtra(de.tetnavigator.data.download.DownloadWorker.EXTRA_OPEN_DOWNLOADS)
+        }
         val uris = when (intent.action) {
             Intent.ACTION_SEND -> listOfNotNull(IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, Uri::class.java))
             Intent.ACTION_SEND_MULTIPLE -> IntentCompat.getParcelableArrayListExtra(intent, Intent.EXTRA_STREAM, Uri::class.java).orEmpty()

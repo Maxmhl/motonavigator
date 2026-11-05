@@ -45,6 +45,12 @@ class OfflineStorage @Inject constructor(@ApplicationContext private val context
     fun terrariumFiles() = installed(PackageType.DEM_TERRARIUM)
     fun hasAnyMap() = mapFiles().isNotEmpty() || protomapsFiles().isNotEmpty()
 
+    /** Unterbrochene Downloads verwerfen: Arbeitsordner und .part-Dateien löschen. */
+    fun discardPartialDownloads() {
+        File(root, ".work").deleteRecursively()
+        root.walkTopDown().filter { it.isFile && (it.name.endsWith(".part") || it.name.endsWith(".tmp") || it.name.endsWith(".data")) }.forEach { it.delete() }
+    }
+
     /** Arbeitsverzeichnis für unterbrochene Direkt-Downloads. */
     fun workDir(name: String): File = File(root, ".work/$name").apply { mkdirs() }
     fun contourFiles() = installed(PackageType.CONTOURS)

@@ -25,6 +25,7 @@ dependencies {
     ksp(libs.hilt.androidx.compiler)
     implementation(libs.androidx.core.ktx)
     testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.work.testing)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.junit)

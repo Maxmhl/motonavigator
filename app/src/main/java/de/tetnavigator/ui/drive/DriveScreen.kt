@@ -220,6 +220,7 @@ fun DriveScreen(nav: NavHostController, vm: DriveViewModel = hiltViewModel()) {
                 }
                 if (fix == null) StatusChip(stringResource(R.string.waiting_gps), ChipKind.Neutral)
             }
+            DownloadChip { nav.navigate(Routes.DOWNLOADS) }
             FuelBanner(fuel)
             aux?.let {
                 Spacer(Modifier.height(8.dp))
@@ -295,6 +296,22 @@ fun DriveScreen(nav: NavHostController, vm: DriveViewModel = hiltViewModel()) {
             Overlay.PIN -> Sheet({ overlay = Overlay.NONE }) { PinContent(vm) { overlay = Overlay.NONE } }
             Overlay.NOTE -> Sheet({ overlay = Overlay.NONE }) { NoteContent(vm) { overlay = Overlay.NONE } }
         }
+    }
+}
+
+/** Laufender Download auch im Fahr-Screen erkennbar (tippen → Download-Anzeige). */
+@Composable
+private fun DownloadChip(vm: de.tetnavigator.ui.downloads.DownloadsViewModel = hiltViewModel(), onOpen: () -> Unit) {
+    val s by vm.state.collectAsStateWithLifecycle()
+    if (!s.active) return
+    Spacer(Modifier.height(8.dp))
+    val pct = de.tetnavigator.ui.downloads.fractionOf(s)?.let { " ${(it * 100).toInt()} %" } ?: ""
+    androidx.compose.foundation.layout.Box(Modifier.heightIn(min = 48.dp).clickable(onClick = onOpen), contentAlignment = Alignment.CenterStart) {
+        StatusChip(
+            stringResource(R.string.dl_banner_title) + pct + if (s is de.tetnavigator.data.download.DownloadState.Paused) " · " + stringResource(R.string.dl_paused) else "",
+            if (s is de.tetnavigator.data.download.DownloadState.Failed) ChipKind.Danger else ChipKind.Accent,
+            icon = TetIcons.Download,
+        )
     }
 }
 

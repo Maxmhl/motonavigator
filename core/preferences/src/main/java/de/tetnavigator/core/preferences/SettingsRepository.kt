@@ -47,7 +47,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
 
     /** Nach erfolgreichem Download: Sperre setzen, Neu-Laden-Freigabe zurücknehmen. */
     suspend fun lockOffline(installed: Set<String>) = update {
-        it.copy(offlineLocked = true, reloadUnlocked = false, setupDone = true, installedCountries = installed)
+        it.copy(
+            offlineLocked = true, reloadUnlocked = false, setupDone = true, installedCountries = installed,
+            activeDownload = "", downloadPaused = false, downloadPausedStep = "", downloadPausedFraction = 0.0,
+        )
     }
 
     /** „Pakete neu laden“ – bewusste Freigabe durch den Nutzer. */
@@ -66,6 +69,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         setupMode = p[K.setupMode] ?: "direct",
         directMaxZoom = p[K.directMaxZoom] ?: 13,
         directDem = p[K.directDem] ?: true,
+        activeDownload = p[K.activeDownload] ?: "",
+        downloadPaused = p[K.downloadPaused] ?: false,
+        downloadPausedFraction = p[K.downloadPausedFraction] ?: 0.0,
+        downloadPausedStep = p[K.downloadPausedStep] ?: "",
         deviationThresholdM = p[K.deviationThresholdM] ?: 40,
         alarmSound = p[K.alarmSound] ?: true,
         alarmVibrate = p[K.alarmVibrate] ?: true,
@@ -103,6 +110,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         p[K.setupMode] = s.setupMode
         p[K.directMaxZoom] = s.directMaxZoom
         p[K.directDem] = s.directDem
+        p[K.activeDownload] = s.activeDownload
+        p[K.downloadPaused] = s.downloadPaused
+        p[K.downloadPausedFraction] = s.downloadPausedFraction
+        p[K.downloadPausedStep] = s.downloadPausedStep
         p[K.deviationThresholdM] = s.deviationThresholdM
         p[K.alarmSound] = s.alarmSound
         p[K.alarmVibrate] = s.alarmVibrate
@@ -140,6 +151,10 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         val setupMode = stringPreferencesKey("setupMode")
         val directMaxZoom = intPreferencesKey("directMaxZoom")
         val directDem = booleanPreferencesKey("directDem")
+        val activeDownload = stringPreferencesKey("activeDownload")
+        val downloadPaused = booleanPreferencesKey("downloadPaused")
+        val downloadPausedFraction = doublePreferencesKey("downloadPausedFraction")
+        val downloadPausedStep = stringPreferencesKey("downloadPausedStep")
         val deviationThresholdM = intPreferencesKey("deviationThresholdM")
         val alarmSound = booleanPreferencesKey("alarmSound")
         val alarmVibrate = booleanPreferencesKey("alarmVibrate")

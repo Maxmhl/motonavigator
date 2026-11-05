@@ -29,6 +29,8 @@ import de.tetnavigator.core.designsystem.NavTab
 import de.tetnavigator.core.designsystem.TetIcons
 import de.tetnavigator.core.designsystem.TetTheme
 import de.tetnavigator.core.preferences.AppSettings
+import de.tetnavigator.ui.downloads.DownloadBanner
+import de.tetnavigator.ui.downloads.DownloadsScreen
 import de.tetnavigator.ui.drive.DriveScreen
 import de.tetnavigator.ui.importer.ImportScreen
 import de.tetnavigator.ui.library.CountryScreen
@@ -56,6 +58,7 @@ object Routes {
     const val STAGES = "stages"
     const val JOURNAL = "journal"
     const val POIS = "pois"
+    const val DOWNLOADS = "downloads"
     fun country(cc: String) = "country/$cc"
     fun section(id: Long) = "section/$id"
 }
@@ -84,7 +87,19 @@ fun AppRoot(settings: AppSettings) {
     val route = entry?.destination?.route
     val tabIndex = when (route) { Routes.MAP -> 0; Routes.TRACKS -> 1; Routes.LOGBOOK -> 2; else -> -1 }
 
+    // Aus der Download-Benachrichtigung geöffnet → Download-Anzeige
+    val openDownloads by root.events.openDownloads.collectAsStateWithLifecycle()
+    LaunchedEffect(openDownloads, settings.permissionsExplained) {
+        if (openDownloads && settings.permissionsExplained) {
+            root.events.openDownloads.value = false
+            nav.navigate(if (settings.setupDone) Routes.DOWNLOADS else Routes.SETUP) { launchSingleTop = true }
+        }
+    }
     Column(Modifier.fillMaxSize().background(TetTheme.colors.bg)) {
+        // Laufender/pausierter Download auf allen Screens sichtbar (außer Fahr-Screen und Einrichtung)
+        if (route != null && route != Routes.MAP && route != Routes.SETUP && route != Routes.DOWNLOADS && route != Routes.PERMISSIONS) {
+            Box(Modifier.statusBarsPadding()) { DownloadBanner(onOpen = { nav.navigate(Routes.DOWNLOADS) { launchSingleTop = true } }) }
+        }
         Box(Modifier.weight(1f).let { if (route == Routes.MAP) it else it.statusBarsPadding() }) {
             NavHost(nav, startDestination = start) {
                 composable(Routes.PERMISSIONS) { PermissionsScreen(onDone = { nav.go(if (settings.setupDone) Routes.TRACKS else Routes.SETUP, clear = true) }) }
@@ -99,6 +114,7 @@ fun AppRoot(settings: AppSettings) {
                 composable(Routes.STAGES) { StagePlannerScreen(nav) }
                 composable(Routes.JOURNAL) { JournalScreen(nav) }
                 composable(Routes.POIS) { PoiScreen(nav) }
+                composable(Routes.DOWNLOADS) { DownloadsScreen(nav) }
             }
         }
         if (tabIndex >= 0 && tabIndex != 0) {

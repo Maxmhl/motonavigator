@@ -16,6 +16,12 @@ data class AppSettings(
     val setupMode: String = "direct",
     val directMaxZoom: Int = 13,
     val directDem: Boolean = true,
+    /** Laufender oder pausierter Download-Auftrag (JSON), leer = keiner. */
+    val activeDownload: String = "",
+    val downloadPaused: Boolean = false,
+    /** Letzter bekannter Fortschritt beim Pausieren (0..1) und Schrittname. */
+    val downloadPausedFraction: Double = 0.0,
+    val downloadPausedStep: String = "",
     // Navigation
     val deviationThresholdM: Int = 40,
     val alarmSound: Boolean = true,

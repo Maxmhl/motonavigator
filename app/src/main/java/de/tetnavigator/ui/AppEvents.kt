@@ -27,6 +27,9 @@ class AppEvents @Inject constructor() {
     fun offer(uris: List<android.net.Uri>) { if (uris.isNotEmpty()) _incoming.value = uris }
     fun consumeIncoming(): List<android.net.Uri> = _incoming.value.also { _incoming.value = emptyList() }
 
+    /** Benachrichtigung „Download“ angetippt → Download-Anzeige öffnen. */
+    val openDownloads = MutableStateFlow(false)
+
     /** Fahr-Screen aktiv → Display an lassen. */
     val keepScreenOn = MutableStateFlow(false)
 }

@@ -136,6 +136,8 @@ fun SettingsScreen(nav: NavHostController, vm: SettingsViewModel = hiltViewModel
                 else StatusChip(stringResource(R.string.set_not_locked), ChipKind.Warning)
             }
             Spacer(Modifier.height(8.dp))
+            SecondaryButton(stringResource(R.string.dl_title), { nav.navigate(Routes.DOWNLOADS) }, Modifier.fillMaxWidth(), icon = de.tetnavigator.core.designsystem.TetIcons.Download)
+            Spacer(Modifier.height(8.dp))
             TetButton(
                 stringResource(R.string.set_reload), {
                     scope.launch { vm.interactor.unlockForReload(); nav.navigate(Routes.SETUP) }

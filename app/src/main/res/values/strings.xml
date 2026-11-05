@@ -87,6 +87,26 @@
     <string name="setup_done_text">Alle Pakete sind geprüft und gespeichert. Die Netzwerksperre ist aktiv. Als Nächstes deine TET-GPX importieren.</string>
     <string name="setup_import_now">Jetzt GPX importieren</string>
 
+    <!-- Downloads -->
+    <string name="dl_title">Downloads</string>
+    <string name="dl_banner_title">Download</string>
+    <string name="dl_running">Lädt…</string>
+    <string name="dl_waiting_wifi">Wartet auf WLAN</string>
+    <string name="dl_waiting_network">Wartet auf Netzwerk</string>
+    <string name="dl_paused">Pausiert</string>
+    <string name="dl_failed">Fehlgeschlagen: %1$s</string>
+    <string name="dl_done">Fertig – alle Pakete installiert</string>
+    <string name="dl_pause">Pausieren</string>
+    <string name="dl_resume">Fortsetzen</string>
+    <string name="dl_stop">Stoppen</string>
+    <string name="dl_stop_hint">Stoppen: lang drücken – bereits Geladenes dieses Downloads wird verworfen</string>
+    <string name="dl_paused_hint">Bereits Geladenes bleibt erhalten. „Fortsetzen“ macht an derselben Stelle weiter.</string>
+    <string name="dl_none">Gerade läuft kein Download.</string>
+    <string name="dl_direct_info">direkt aus dem Internet, bis Zoom %1$d</string>
+    <string name="dl_server_info">vom eigenen Server</string>
+    <string name="dl_background_hint">Der Download läuft auch weiter, wenn du die App verlässt. Die Anzeige findest du oben auf jedem Screen, in der Benachrichtigung und unter Einstellungen → Downloads.</string>
+    <string name="dl_continue_in_app">Weiter in der App (Download läuft im Hintergrund)</string>
+
     <!-- Track-Bibliothek -->
     <string name="tracks_title">Tracks</string>
     <string name="tracks_subtitle">%1$d Länder · %2$d Sektionen importiert</string>

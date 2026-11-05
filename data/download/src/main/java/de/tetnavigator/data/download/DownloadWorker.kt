@@ -134,6 +134,12 @@ class DownloadWorker @AssistedInject constructor(
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .setProgress(max, progress, max == 0)
+            .addAction(android.R.drawable.ic_media_pause, "Pausieren", DownloadActionReceiver.pauseIntent(applicationContext))
+            .apply {
+                applicationContext.packageManager.getLaunchIntentForPackage(applicationContext.packageName)?.let { launch ->
+                    setContentIntent(android.app.PendingIntent.getActivity(applicationContext, 2, launch.putExtra(EXTRA_OPEN_DOWNLOADS, true), android.app.PendingIntent.FLAG_IMMUTABLE or android.app.PendingIntent.FLAG_UPDATE_CURRENT))
+                }
+            }
             .build()
         return ForegroundInfo(NOTIFICATION_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
     }
@@ -146,6 +152,8 @@ class DownloadWorker @AssistedInject constructor(
         const val KEY_DEM = "dem"
         const val KEY_BUILD = "build"
         const val P_FRACTION = "fraction"
+        /** Intent-Extra: App öffnet direkt die Download-Anzeige. */
+        const val EXTRA_OPEN_DOWNLOADS = "openDownloads"
         const val KEY_ERROR = "error"
         const val P_FILE = "file"
         const val P_INDEX = "index"

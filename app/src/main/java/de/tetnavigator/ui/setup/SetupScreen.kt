@@ -97,6 +97,8 @@ class SetupViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             val s = settings.current()
+            // Läuft (oder pausiert) bereits ein Download → direkt dorthin
+            if (s.activeDownload.isNotBlank()) _ui.value = _ui.value.copy(step = SetupStep.DOWNLOAD)
             _ui.value = _ui.value.copy(
                 baseUrl = s.baseUrl, wifiOnly = s.wifiOnly, selected = s.selectedCountries,
                 directOptions = setup.directCountries(), directSelected = s.selectedCountries,
@@ -184,7 +186,7 @@ fun SetupScreen(onDone: () -> Unit, onBack: (() -> Unit)?, vm: SetupViewModel = 
                 SetupStep.DIRECT_PLAN -> DirectPlan(ui, vm)
                 SetupStep.SERVER -> Server(ui, vm)
                 SetupStep.COUNTRIES -> CountriesStep(ui, vm)
-                SetupStep.DOWNLOAD -> DownloadStep(dl, vm)
+                SetupStep.DOWNLOAD -> DownloadStep(dl, vm, onLeave = if (onBack != null) onBack else onDone)
                 SetupStep.DONE -> DoneStep(onDone)
             }
         }
@@ -402,39 +404,24 @@ private fun CountriesStep(ui: SetupUi, vm: SetupViewModel) {
 }
 
 @Composable
-private fun DownloadStep(dl: DownloadState, vm: SetupViewModel) {
+private fun DownloadStep(dl: DownloadState, vm: SetupViewModel, onLeave: () -> Unit, dvm: de.tetnavigator.ui.downloads.DownloadsViewModel = hiltViewModel()) {
     val c = TetTheme.colors
+    val request by dvm.request.collectAsStateWithLifecycle()
+    // Gestoppt → zurück zur Quellenwahl (erst, nachdem der Auftrag einmal aktiv war)
+    var seen by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(dl, request) {
+        if (request != null || dl.active) seen = true
+        else if (seen && dl == DownloadState.Idle) vm.go(SetupStep.SOURCE)
+    }
     Column(Modifier.fillMaxSize()) {
-        when (dl) {
-            is DownloadState.Running -> {
-                Text(stringResource(R.string.setup_downloading).uppercase(), style = TetTheme.type.title, color = c.text)
-                Spacer(Modifier.height(16.dp))
-                TetProgressBar(dl.fraction)
-                Spacer(Modifier.height(8.dp))
-                Text(if (dl.fileCount > 0) "${dl.fileIndex}/${dl.fileCount} · ${dl.fileName}" else dl.fileName, style = TetTheme.type.body, color = c.text)
-                Text(
-                    (if (dl.bytesTotal > 0) "${bytes(dl.bytesDone)} / ${bytes(dl.bytesTotal)} · " else "") + "${(dl.fraction * 100).toInt()} %",
-                    style = TetTheme.type.bodySmall, color = c.sand,
-                )
-            }
-            is DownloadState.Failed -> {
-                Panel(borderColor = c.danger) {
-                    Text(stringResource(R.string.setup_failed), style = TetTheme.type.bodyStrong, color = c.danger)
-                    Text(dl.message, style = TetTheme.type.body, color = c.text)
-                }
-                Spacer(Modifier.height(12.dp))
-                PrimaryButton(stringResource(R.string.retry), { vm.startDownload() }, Modifier.fillMaxWidth())
-            }
-            else -> {
-                Text(stringResource(R.string.setup_waiting), style = TetTheme.type.body, color = c.text)
-                Spacer(Modifier.height(16.dp))
-                TetProgressBar(0f)
-            }
-        }
-        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.setup_downloading).uppercase(), style = TetTheme.type.title, color = c.text)
+        Spacer(Modifier.height(12.dp))
+        de.tetnavigator.ui.downloads.DownloadPanel(dl, request, dvm)
+        Spacer(Modifier.height(12.dp))
         Text(stringResource(R.string.setup_background_hint), style = TetTheme.type.bodySmall, color = c.sand)
         Spacer(Modifier.weight(1f))
-        SecondaryButton(stringResource(R.string.cancel), { vm.cancel(); vm.go(SetupStep.SOURCE) }, Modifier.fillMaxWidth())
+        // App weiter benutzen (z. B. schon GPX importieren), Download läuft im Hintergrund
+        SecondaryButton(stringResource(R.string.dl_continue_in_app), onLeave, Modifier.fillMaxWidth())
     }
 }
 

@@ -30,8 +30,10 @@ sealed interface DownloadState {
         val fileCount: Int,
         val bytesDone: Long,
         val bytesTotal: Long,
+        /** Gesamtfortschritt 0..1, falls bekannt (Direkt-Modus). */
+        val overall: Float? = null,
     ) : DownloadState {
-        val fraction: Float get() = if (bytesTotal <= 0) 0f else (bytesDone.toDouble() / bytesTotal).toFloat()
+        val fraction: Float get() = overall ?: if (bytesTotal <= 0) 0f else (bytesDone.toDouble() / bytesTotal).toFloat()
     }
     data class Failed(val message: String) : DownloadState
     data object Done : DownloadState
@@ -44,6 +46,7 @@ class DownloadController @Inject constructor(
     private val settings: SettingsRepository,
     private val storage: OfflineStorage,
     private val downloader: PackageDownloader,
+    private val direct: DirectInstaller,
 ) {
     private val wm get() = WorkManager.getInstance(context)
 
@@ -60,7 +63,7 @@ class DownloadController @Inject constructor(
     fun freeBytes(): Long = storage.freeBytes()
 
     suspend fun start(countries: Set<String>, wifiOnly: Boolean) {
-        settings.update { it.copy(selectedCountries = countries, wifiOnly = wifiOnly) }
+        settings.update { it.copy(selectedCountries = countries, wifiOnly = wifiOnly, setupMode = "server") }
         val req = OneTimeWorkRequestBuilder<DownloadWorker>()
             .setConstraints(
                 Constraints.Builder()
@@ -68,6 +71,32 @@ class DownloadController @Inject constructor(
                     .build(),
             )
             .setInputData(workDataOf(DownloadWorker.KEY_COUNTRIES to countries.toTypedArray()))
+            .addTag(WORK_NAME)
+            .build()
+        wm.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, req)
+    }
+
+    /** Größe für die Einrichtung ohne PC berechnen (lädt nur Verzeichnisse, wenige MB). */
+    suspend fun estimateDirect(options: DirectOptions): DirectEstimate = direct.estimate(options)
+
+    suspend fun startDirect(options: DirectOptions, build: String?, wifiOnly: Boolean) {
+        settings.update {
+            it.copy(
+                selectedCountries = options.countries, wifiOnly = wifiOnly, setupMode = "direct",
+                directMaxZoom = options.maxZoom, directDem = options.dem,
+            )
+        }
+        val req = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setConstraints(Constraints.Builder().setRequiredNetworkType(if (wifiOnly) NetworkType.UNMETERED else NetworkType.CONNECTED).build())
+            .setInputData(
+                workDataOf(
+                    DownloadWorker.KEY_MODE to DownloadWorker.MODE_DIRECT,
+                    DownloadWorker.KEY_COUNTRIES to options.countries.toTypedArray(),
+                    DownloadWorker.KEY_MAX_ZOOM to options.maxZoom,
+                    DownloadWorker.KEY_DEM to options.dem,
+                    DownloadWorker.KEY_BUILD to build,
+                ),
+            )
             .addTag(WORK_NAME)
             .build()
         wm.enqueueUniqueWork(WORK_NAME, ExistingWorkPolicy.REPLACE, req)
@@ -87,6 +116,7 @@ class DownloadController @Inject constructor(
                     p.getInt(DownloadWorker.P_COUNT, 0),
                     p.getLong(DownloadWorker.P_DONE, 0),
                     p.getLong(DownloadWorker.P_TOTAL, 0),
+                    p.getFloat(DownloadWorker.P_FRACTION, -1f).takeIf { it >= 0f },
                 )
             }
             WorkInfo.State.SUCCEEDED -> DownloadState.Done
@@ -115,5 +145,8 @@ object DownloadModule {
     fun policy(impl: SettingsNetworkPolicy): NetworkPolicy = impl
 
     @Provides @Singleton
-    fun downloader(policy: NetworkPolicy): PackageDownloader = PackageDownloader(policy)
+    fun client(policy: NetworkPolicy): okhttp3.OkHttpClient = HttpClients.create(policy)
+
+    @Provides @Singleton
+    fun downloader(client: okhttp3.OkHttpClient): PackageDownloader = PackageDownloader(client)
 }

@@ -143,7 +143,10 @@ class PoiDatabase @Inject constructor(private val storage: OfflineStorage) {
         out
     }
 
-    fun hasSurfaceData(): Boolean = dbs().any { (_, db) -> hasTable(db, "way_surface") }
+    fun hasSurfaceData(): Boolean = dbs().any { (_, db) ->
+        hasTable(db, "way_surface") && hasTable(db, "way_rtree") &&
+            runCatching { db.rawQuery("SELECT 1 FROM way_surface LIMIT 1", null).use { it.moveToFirst() } }.getOrDefault(false)
+    }
     fun hasAnyPoiData(): Boolean = dbs().isNotEmpty()
 
     companion object {

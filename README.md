@@ -64,6 +64,10 @@ Voraussetzungen: JDK 17+ und Android SDK (compileSdk 36).
 ./gradlew testDebugUnitTest            # Unit- und Robolectric-Tests aller Module
 ./gradlew verifyNoNetworkOutsideDownload
 ./gradlew :app:lintDebug
+
+# optional: Live-Tests gegen die öffentlichen Quellen bzw. echte BRouter-Segmente
+./gradlew :data:download:testDebugUnitTest -PtetLiveOut=/tmp/tet-live
+./gradlew :feature:navigation:testDebugUnitTest -PtetSegmentsDir=/pfad/mit/E10_N60.rd5
 ```
 
 ## Releases
@@ -79,11 +83,28 @@ Umgebungsvariablen `TET_KEYSTORE_FILE`, `TET_KEYSTORE_PASSWORD`, `TET_KEY_ALIAS`
 
 ## Erste Schritte
 
-1. Pakete am PC bauen und bereitstellen: siehe [`tools/build-packages/README.md`](tools/build-packages/README.md).
-2. App starten → Berechtigungen (je ein Erklär-Screen) → Einrichtung: Basis-URL, Länder wählen,
-   Download (fortsetzbar, nur WLAN optional, Foreground-Benachrichtigung) → Offline-Sperre aktiv.
+1. App starten → Berechtigungen (je ein Erklär-Screen) → Einrichtung → Quelle wählen:
+   - **Direkt aus dem Internet (empfohlen, ohne PC):** Länder wählen, Kartendetail (Sparsam = Zoom 12,
+     Standard = Zoom 13, Hoch = Zoom 14), Höhendaten an/aus → „Größe berechnen“ → Download.
+   - **Eigener Server:** Pakete am PC bauen (siehe [`tools/build-packages/README.md`](tools/build-packages/README.md)),
+     Basis-URL eingeben, Länder wählen → Download.
+2. Der Download läuft als Foreground-Arbeit (fortsetzbar, nur WLAN optional). Danach ist die
+   Offline-Sperre aktiv.
 3. TET-GPX importieren: „+ GPX“ oder im Browser „Teilen mit… → TET Navigator“.
 4. Land → Sektion → **LOSFAHREN** (oder **RÜCKWÄRTS**).
+
+## Einrichtung ohne PC – Quellen und Verarbeitung auf dem Handy
+
+| Paket | Quelle | Verarbeitung auf dem Gerät |
+|---|---|---|
+| Karte | Täglicher Protomaps-Planet-Build (`build.protomaps.com`, OSM-Daten) | Ausschnitt per HTTP-Range wie `pmtiles extract`: Landesgrenze (Natural Earth, in der App) + 3 km Rand, Zoom 0 bis 12/13/14; Kacheln per gzip-CRC geprüft; fortsetzbar |
+| Höhendaten | Terrain Tiles (Terrarium, AWS Open Data) bis Zoom 10 | in ein lokales PMTiles gepackt; Schummerung in MapLibre, **Höhenlinien werden live aus den Höhendaten berechnet** (20/50/100 m je nach Zoom) |
+| Routing | BRouter-Segmente von `brouter.de` | unverändert; zusätzlich Quelle für die **Untergrund-Färbung** (Belag-Tags der Wege entlang des Tracks) |
+| POIs | Overpass-API (mehrere öffentliche Server als Ausweich) | zu derselben POI-SQLite verarbeitet wie am PC; schlägt der Abruf fehl, wird die Einrichtung ohne POIs abgeschlossen |
+
+Richtwerte für Norwegen (gemessen): Karte bis Zoom 12 ≈ 480 MB, bis 13 ≈ 920 MB, bis 14 ≈ 1,6 GB;
+Höhendaten ≈ 2.350 Kacheln (≈ 140 MB). Auch hier gilt: nur das Download-Modul hat Netzwerkzugriff,
+nach Abschluss ist `offlineLocked` aktiv.
 
 ## Kern-Algorithmus „Track folgen“
 
@@ -99,6 +120,8 @@ Umgebungsvariablen `TET_KEYSTORE_FILE`, `TET_KEYSTORE_PASSWORD`, `TET_KEY_ALIAS`
 
 ## Lizenzen
 
-Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Schriften unter SIL OFL (`licenses/`).
+Kartendaten © OpenStreetMap-Mitwirkende (ODbL), Kartenkacheln im Direkt-Modus von Protomaps.
+Höhendaten: Mapzen/Tilezen Terrain Tiles (AWS Open Data). Landesgrenzen: Natural Earth (gemeinfrei).
+Schriften unter SIL OFL (`licenses/`).
 Offline-Routing mit [BRouter](https://github.com/abrensch/brouter) (`tet-schotter.brf` abgeleitet von
 `moped.brf`). Karten-Rendering mit MapLibre Native.

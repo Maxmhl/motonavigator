@@ -82,6 +82,8 @@ import de.tetnavigator.feature.navigation.DeviationMonitor
 import de.tetnavigator.feature.navigation.ManeuverKind
 import de.tetnavigator.feature.navigation.TurnSide
 import de.tetnavigator.location.LocationService
+import de.tetnavigator.map.ContourController
+import de.tetnavigator.map.Contours
 import de.tetnavigator.map.MapController
 import de.tetnavigator.map.MapLayers
 import de.tetnavigator.map.MapStyleBuilder
@@ -128,11 +130,31 @@ fun DriveScreen(nav: NavHostController, vm: DriveViewModel = hiltViewModel()) {
     }
     LaunchedEffect(Unit) { vm.toast.collect { Toast.makeText(ctx, it, Toast.LENGTH_SHORT).show() } }
 
-    val styleJson = remember(settings.layerHillshade, settings.layerContours, c, vm.storage.registry.collectAsStateWithLifecycle().value) {
+    val registry by vm.storage.registry.collectAsStateWithLifecycle()
+    val styleJson = remember(settings.layerHillshade, settings.layerContours, c, registry) {
         MapStyleBuilder.build(
             c, vm.storage.mapFiles(), vm.storage.hillshadeFiles(), vm.storage.contourFiles(),
             MapLayers(settings.layerHillshade, settings.layerContours),
+            protomaps = vm.storage.protomapsFiles(), terrarium = vm.storage.terrariumFiles(),
         )
+    }
+    // Höhenlinien live aus den Höhendaten, wenn keine fertigen Höhenlinien-Pakete da sind
+    val contourSource = remember(registry) {
+        if (vm.storage.contourFiles().isEmpty()) ContourController(vm.storage.terrariumFiles().map { it.second }) else null
+    }
+    DisposableEffect(contourSource) { onDispose { contourSource?.close() } }
+    LaunchedEffect(controller, contourSource, settings.layerContours) {
+        val ctl = controller ?: return@LaunchedEffect
+        val src = contourSource
+        if (src == null || !src.available || !settings.layerContours) { ctl.setContours(emptyList(), 20); return@LaunchedEffect }
+        val idle = kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED)
+        ctl.onCameraIdle { idle.trySend(Unit) }
+        idle.send(Unit)
+        for (u in idle) {
+            val (b, z) = ctl.visibleRegion()
+            val lines = runCatching { src.contours(b[0], b[1], b[2], b[3], z) }.getOrDefault(emptyList())
+            ctl.setContours(lines, Contours.intervalFor(z))
+        }
     }
 
     // Remote-/Lautstärketasten
@@ -178,7 +200,7 @@ fun DriveScreen(nav: NavHostController, vm: DriveViewModel = hiltViewModel()) {
             onReady = { controller = it },
             modifier = Modifier.fillMaxSize(),
         )
-        if (vm.storage.mapFiles().isEmpty()) {
+        if (!vm.storage.hasAnyMap()) {
             Panel(Modifier.align(Alignment.Center).padding(24.dp)) {
                 Text(stringResource(R.string.no_map_installed), style = TetTheme.type.body, color = c.sand)
             }

@@ -7,7 +7,11 @@ import kotlinx.serialization.json.Json
 /** Paket-Typen aus manifest.json (Spezifikation 4). */
 enum class PackageType(val id: String, val labelDe: String) {
     MAP("map", "Karte"),
+    /** Karte im Protomaps-Basemap-Schema (Direkt-Download ohne PC). */
+    MAP_PROTOMAPS("map-protomaps", "Karte"),
     HILLSHADE("hillshade", "Höhendaten/Schummerung"),
+    /** Höhendaten als Terrarium-PNG (Direkt-Download), Quelle für Schummerung und Höhenlinien. */
+    DEM_TERRARIUM("dem-terrarium", "Höhendaten/Schummerung"),
     CONTOURS("contours", "Höhenlinien"),
     ROUTING("routing", "Routing-Segmente"),
     POI("poi", "POIs"),

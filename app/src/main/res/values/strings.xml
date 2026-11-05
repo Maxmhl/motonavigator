@@ -45,9 +45,28 @@
     <string name="setup_title">Einrichtung</string>
     <string name="setup_step">Schritt %1$d von %2$d</string>
     <string name="setup_welcome_title">Willkommen</string>
-    <string name="setup_welcome_text">Einmal laden, dann offline: Jetzt werden einmalig alle Karten-, Höhen-, Routing- und POI-Pakete für deine Länder heruntergeladen.</string>
+    <string name="setup_welcome_text">Einmal laden, dann offline: Jetzt werden einmalig alle Karten-, Höhen-, Routing- und POI-Pakete für deine Länder heruntergeladen – direkt aufs Handy, ohne PC.</string>
     <string name="setup_offline_hint">Danach funktioniert alles offline. Die App baut von sich aus keine Netzwerkverbindung mehr auf.</string>
     <string name="setup_skip">Überspringen</string>
+    <string name="setup_source_text">Woher sollen die Offline-Pakete kommen?</string>
+    <string name="setup_source_direct">Direkt aus dem Internet</string>
+    <string name="setup_source_direct_sub">Empfohlen – ohne PC und ohne eigenen Server. Die App lädt Karte (OpenStreetMap über Protomaps), Höhendaten, Routing (BRouter) und POIs (Overpass) einmalig selbst und baut daraus die Offline-Pakete.</string>
+    <string name="setup_source_server">Eigener Server</string>
+    <string name="setup_source_server_sub">Pakete, die du am PC mit tools/build-packages gebaut hast (manifest.json).</string>
+    <string name="setup_detail">Kartendetail</string>
+    <string name="setup_detail_low">Sparsam</string>
+    <string name="setup_detail_std">Standard</string>
+    <string name="setup_detail_high">Hoch</string>
+    <string name="setup_dem">Höhendaten</string>
+    <string name="setup_dem_sub">Schummerung, Höhenlinien und Höhenprofil ohne GPX-Höhen</string>
+    <string name="setup_estimate">Größe berechnen</string>
+    <string name="setup_estimating">Größe wird berechnet – dafür werden nur die Inhaltsverzeichnisse der Karte geladen (wenige MB)…</string>
+    <string name="setup_plan_map">Karte: %1$s (%2$d Kacheln)</string>
+    <string name="setup_plan_dem">Höhendaten: ca. %1$s</string>
+    <string name="setup_plan_routing">Routing-Segmente (alle Länder): %1$s</string>
+    <string name="setup_plan_pois">POIs (Camping &amp; Versorgung): wenige MB je Land</string>
+    <string name="setup_plan_sources">Quellen: Protomaps-Build %1$s (© OpenStreetMap), Terrain Tiles (AWS), brouter.de, Overpass</string>
+    <string name="setup_total_direct">Gesamt: ca. %1$s</string>
     <string name="setup_server_text">Die Pakete liegen auf deinem eigenen Server (am PC gebaut mit tools/build-packages). Gib die Basis-URL ein, unter der die manifest.json liegt.</string>
     <string name="setup_base_url">Basis-URL</string>
     <string name="setup_manifest_hint">Erwartet: &lt;Basis-URL&gt;/manifest.json mit Dateiliste, Größe und SHA-256.</string>
@@ -129,7 +148,7 @@
     <string name="layers">Kartenebenen</string>
     <string name="zoom_in">Hineinzoomen</string>
     <string name="zoom_out">Herauszoomen</string>
-    <string name="osm_attribution">© OpenStreetMap-Mitwirkende</string>
+    <string name="osm_attribution">© OpenStreetMap-Mitwirkende · Protomaps</string>
     <string name="fuel_last_station">Letzte Tankstelle in %1$s – danach %2$s km ohne. Tanken!</string>
     <string name="fuel_out_of_range_station">Reichweite %1$s km reicht nicht bis zur nächsten Tankstelle (%2$s km)</string>
     <string name="fuel_out_of_range">Reichweite %1$s km reicht nicht bis zum Sektionsende</string>
@@ -249,7 +268,7 @@
     <string name="set_reload_sub">Hebt die Netzwerksperre einmalig für den Einrichtungs-Assistenten auf. Nach dem Download ist sie wieder aktiv.</string>
     <string name="set_about">Über</string>
     <string name="set_privacy">Keine Accounts, keine Analytics, keine Cloud. Deine GPX-Dateien bleiben auf dem Gerät und werden nie weiterverteilt.</string>
-    <string name="set_licenses">Kartendaten © OpenStreetMap-Mitwirkende (ODbL). Schriften: Saira Stencil One, Barlow Condensed, Noto Sans (SIL OFL). Routing: BRouter. Karten: MapLibre.</string>
+    <string name="set_licenses">Kartendaten © OpenStreetMap-Mitwirkende (ODbL), Kacheln von Protomaps. Höhendaten: Mapzen/Tilezen Terrain Tiles (AWS Open Data). Landesgrenzen: Natural Earth. POIs: Overpass-API. Schriften: Saira Stencil One, Barlow Condensed, Noto Sans (SIL OFL). Routing: BRouter. Karten: MapLibre.</string>
     <string name="set_permissions_again">Berechtigungen erneut erklären</string>
 
     <!-- Dienst -->

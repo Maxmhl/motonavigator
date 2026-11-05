@@ -63,6 +63,9 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         wifiOnly = p[K.wifiOnly] ?: true,
         selectedCountries = p[K.selectedCountries] ?: emptySet(),
         installedCountries = p[K.installedCountries] ?: emptySet(),
+        setupMode = p[K.setupMode] ?: "direct",
+        directMaxZoom = p[K.directMaxZoom] ?: 13,
+        directDem = p[K.directDem] ?: true,
         deviationThresholdM = p[K.deviationThresholdM] ?: 40,
         alarmSound = p[K.alarmSound] ?: true,
         alarmVibrate = p[K.alarmVibrate] ?: true,
@@ -97,6 +100,9 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         p[K.wifiOnly] = s.wifiOnly
         p[K.selectedCountries] = s.selectedCountries
         p[K.installedCountries] = s.installedCountries
+        p[K.setupMode] = s.setupMode
+        p[K.directMaxZoom] = s.directMaxZoom
+        p[K.directDem] = s.directDem
         p[K.deviationThresholdM] = s.deviationThresholdM
         p[K.alarmSound] = s.alarmSound
         p[K.alarmVibrate] = s.alarmVibrate
@@ -131,6 +137,9 @@ class SettingsRepository @Inject constructor(private val store: DataStore<Prefer
         val wifiOnly = booleanPreferencesKey("wifiOnly")
         val selectedCountries = stringSetPreferencesKey("selectedCountries")
         val installedCountries = stringSetPreferencesKey("installedCountries")
+        val setupMode = stringPreferencesKey("setupMode")
+        val directMaxZoom = intPreferencesKey("directMaxZoom")
+        val directDem = booleanPreferencesKey("directDem")
         val deviationThresholdM = intPreferencesKey("deviationThresholdM")
         val alarmSound = booleanPreferencesKey("alarmSound")
         val alarmVibrate = booleanPreferencesKey("alarmVibrate")

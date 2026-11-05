@@ -7,6 +7,7 @@ import de.tetnavigator.core.database.TetDatabase
 import de.tetnavigator.core.database.TrackPointEntity
 import de.tetnavigator.core.offlinedata.PoiDatabase
 import de.tetnavigator.core.offlinedata.SurfaceClass
+import de.tetnavigator.core.offlinedata.SurfaceTagSource
 import de.tetnavigator.core.offlinedata.SurfaceWay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,25 +22,34 @@ import javax.inject.Singleton
 class SurfaceAnalyzer @Inject constructor(
     private val db: TetDatabase,
     private val poi: PoiDatabase,
+    private val tagSource: SurfaceTagSource,
 ) {
+    /** Belag-Daten: POI-Paket mit way_surface (PC-Pakete) oder BRouter-Segmente (Direkt-Download). */
+    private val canAnalyze: Boolean get() = poi.hasSurfaceData() || tagSource.available
     data class Stats(val gravelM: Double, val dirtM: Double, val asphaltM: Double, val unknownM: Double) {
         val total get() = gravelM + dirtM + asphaltM + unknownM
     }
 
     suspend fun analyzePending(): Int = withContext(Dispatchers.IO) {
-        if (!poi.hasSurfaceData()) return@withContext 0
+        if (!canAnalyze) return@withContext 0
         val pending = db.trackDao().sectionsWithoutSurface()
         pending.forEach { analyze(it.id) }
         pending.size
     }
 
     suspend fun analyze(sectionId: Long): Stats? = withContext(Dispatchers.IO) {
-        if (!poi.hasSurfaceData()) return@withContext null
+        if (!canAnalyze) return@withContext null
         val dao = db.trackDao()
         val pts = dao.points(sectionId)
         if (pts.size < 2) return@withContext null
-        val classes = classify(pts) { box ->
-            poi.surfaceWaysNear(box.centerLat, box.centerLon, Geo.distance(box.minLat, box.minLon, box.maxLat, box.maxLon) / 2 + MATCH_M)
+        val classes = if (poi.hasSurfaceData()) {
+            classify(pts) { box ->
+                poi.surfaceWaysNear(box.centerLat, box.centerLon, Geo.distance(box.minLat, box.minLon, box.maxLat, box.maxLon) / 2 + MATCH_M)
+            }
+        } else {
+            // Segment-Mittelpunkte über BRouter klassifizieren
+            val mids = (0 until pts.size - 1).map { de.tetnavigator.core.common.LatLon((pts[it].lat + pts[it + 1].lat) / 2, (pts[it].lon + pts[it + 1].lon) / 2) }
+            tagSource.classify(mids).let { it + (it.lastOrNull() ?: SurfaceClass.UNKNOWN) }
         }
         // in Läufen gleicher Klasse schreiben
         var start = 0

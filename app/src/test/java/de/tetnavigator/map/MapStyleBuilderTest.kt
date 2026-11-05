@@ -33,6 +33,25 @@ class MapStyleBuilderTest {
         }
     }
 
+    @Test fun protomapsAndTerrariumStyle() {
+        val json = MapStyleBuilder.build(
+            DarkTetColors, emptyList(), emptyList(), emptyList(), MapLayers(),
+            protomaps = listOf("NO" to File("/x/no-protomaps.pmtiles")), terrarium = listOf("NO" to File("/x/no-terrarium.pmtiles")),
+        )
+        assertThat(json).doesNotContain("http")
+        val o = JSONObject(json)
+        val src = o.getJSONObject("sources")
+        assertThat(src.getJSONObject("terrarium-NO").getString("encoding")).isEqualTo("terrarium")
+        assertThat(src.getJSONObject("pm-NO").getString("url")).isEqualTo("pmtiles://file:///x/no-protomaps.pmtiles")
+        val layers = o.getJSONArray("layers")
+        val ids = (0 until layers.length()).map { layers.getJSONObject(it).getString("id") }
+        assertThat(ids).containsAtLeast("pm-earth-NO", "pm-water-NO", "pm-track-NO", "pm-place-NO", "hillshade-t-NO")
+        // Feldwege über kind_detail=track
+        val track = (0 until layers.length()).map { layers.getJSONObject(it) }.first { it.getString("id") == "pm-track-NO" }
+        assertThat(track.getString("source-layer")).isEqualTo("roads")
+        assertThat(track.getJSONArray("filter").toString()).contains("kind_detail")
+    }
+
     @Test fun layersCanBeDisabled() {
         val json = MapStyleBuilder.build(DarkTetColors, listOf("NO" to f), listOf("NO" to f), listOf("NO" to f), MapLayers(hillshade = false, contours = false))
         assertThat(json).doesNotContain("hillshade-NO")

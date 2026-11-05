@@ -12,6 +12,10 @@ data class AppSettings(
     val wifiOnly: Boolean = true,
     val selectedCountries: Set<String> = emptySet(),
     val installedCountries: Set<String> = emptySet(),
+    /** "direct" = ohne PC aus öffentlichen Quellen, "server" = eigener Server (manifest.json). */
+    val setupMode: String = "direct",
+    val directMaxZoom: Int = 13,
+    val directDem: Boolean = true,
     // Navigation
     val deviationThresholdM: Int = 40,
     val alarmSound: Boolean = true,

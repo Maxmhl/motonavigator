@@ -1,9 +1,6 @@
 package de.tetnavigator.feature.navigation
 
 import android.content.Context
-import btools.router.OsmNodeNamed
-import btools.router.RoutingContext
-import btools.router.RoutingEngine
 import dagger.hilt.android.qualifiers.ApplicationContext
 import de.tetnavigator.core.common.Geo
 import de.tetnavigator.core.common.LatLon
@@ -32,34 +29,27 @@ class OfflineRouter @Inject constructor(
 ) {
     val available: Boolean get() = storage.hasRouting()
 
-    private fun profile(): File {
+    /** Profil-Dateien aus den Assets ins App-Verzeichnis kopieren (BRouter braucht echte Dateien). */
+    fun profileFile(name: String = PROFILE): File {
         val dir = storage.profilesDir
-        for (name in listOf("lookups.dat", PROFILE)) {
-            val f = File(dir, name)
-            if (!f.exists()) context.assets.open("brouter/$name").use { i -> f.outputStream().use { i.copyTo(it) } }
+        for (n in listOf("lookups.dat", name)) {
+            val f = File(dir, n)
+            if (!f.exists()) context.assets.open("brouter/$n").use { i -> f.outputStream().use { i.copyTo(it) } }
         }
-        return File(dir, PROFILE)
+        return File(dir, name)
     }
 
     suspend fun route(from: LatLon, to: LatLon, nogos: List<NoGo> = emptyList(), timeoutMs: Long = 60_000): Route =
         withContext(Dispatchers.Default) {
             if (!available) throw RoutingUnavailableException("Keine Routing-Segmente installiert (Einrichtung → Pakete laden)")
-            val rc = RoutingContext()
-            rc.localFunction = profile().absolutePath
-            rc.nogopoints = ArrayList<OsmNodeNamed>().apply {
-                nogos.forEachIndexed { i, n ->
-                    add(node(n.lat, n.lon, "nogo${n.radiusM.toInt()} $i").apply { isNogo = true; nogoWeight = Double.NaN })
-                }
-            }
-            RoutingContext.prepareNogoPoints(rc.nogopoints)
-            val wps = listOf(node(from.lat, from.lon, "from"), node(to.lat, to.lon, "to"))
-            val engine = RoutingEngine(null, null, storage.segmentsDir, wps, rc)
-            engine.quite = true
-            engine.doRun(timeoutMs)
-            engine.errorMessage?.let { throw RoutingUnavailableException("Keine Route gefunden: $it") }
-            val track = engine.foundTrack ?: throw RoutingUnavailableException("Keine Route gefunden")
-            val pts = track.nodes.map { LatLon(it.iLat / 1e6 - 90.0, it.iLon / 1e6 - 180.0) }
-            Route(pts, track.distance.toDouble(), track.ascend.toDouble(), track.totalSeconds)
+            BRouterEngine.route(storage.segmentsDir, profileFile(), listOf(from, to), nogos, timeoutMs).first
+        }
+
+    /** Route entlang vorgegebener Wegpunkte mit OSM-Tags je Punkt (für die Untergrund-Analyse). */
+    suspend fun matchWithTags(waypoints: List<LatLon>, timeoutMs: Long = 120_000): List<RoutePoint> =
+        withContext(Dispatchers.Default) {
+            if (!available) throw RoutingUnavailableException("Keine Routing-Segmente installiert")
+            BRouterEngine.route(storage.segmentsDir, profileFile(MATCH_PROFILE), waypoints, emptyList(), timeoutMs).second
         }
 
     /**
@@ -81,12 +71,7 @@ class OfflineRouter @Inject constructor(
 
     companion object {
         const val PROFILE = "tet-schotter.brf"
-
-        private fun node(lat: Double, lon: Double, name: String) = OsmNodeNamed().apply {
-            this.name = name
-            ilon = ((lon + 180.0) * 1e6 + 0.5).toInt()
-            ilat = ((lat + 90.0) * 1e6 + 0.5).toInt()
-        }
+        const val MATCH_PROFILE = "tet-match.brf"
 
         fun lengthOf(points: List<LatLon>): Double {
             var s = 0.0

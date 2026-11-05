@@ -4,6 +4,10 @@ import de.tetnavigator.core.common.Countries
 import de.tetnavigator.core.offlinedata.Manifest
 import de.tetnavigator.core.offlinedata.PackageType
 import de.tetnavigator.core.preferences.SettingsRepository
+import de.tetnavigator.core.offlinedata.CountryShapes
+import de.tetnavigator.core.offlinedata.OfflineStorage
+import de.tetnavigator.data.download.DirectEstimate
+import de.tetnavigator.data.download.DirectOptions
 import de.tetnavigator.data.download.DownloadController
 import de.tetnavigator.data.download.DownloadPlan
 import de.tetnavigator.data.download.DownloadState
@@ -37,7 +41,25 @@ data class PlanCheck(
 class SetupInteractor @Inject constructor(
     private val settings: SettingsRepository,
     private val download: DownloadController,
+    private val shapes: CountryShapes,
+    private val storage: OfflineStorage,
 ) {
+    /** Länder, die ohne PC direkt eingerichtet werden können (Landesgrenze vorhanden). */
+    fun directCountries(): List<CountryOption> =
+        Countries.all.filter { shapes.of(it.code) != null }
+            .map { CountryOption(it.code, it.nameDe, 0, emptySet()) }
+            .sortedBy { it.name }
+
+    suspend fun estimateDirect(options: DirectOptions): DirectCheck {
+        val e = download.estimateDirect(options)
+        val free = storage.freeBytes()
+        // Beim Zusammenbau liegt die größte Karte kurz doppelt auf dem Speicher.
+        val peak = e.totalBytes + (e.countries.maxOfOrNull { it.mapBytes } ?: 0) + 100L * 1024 * 1024
+        return DirectCheck(e, free, free >= peak, peak)
+    }
+
+    suspend fun startDirect(options: DirectOptions, build: String?, wifiOnly: Boolean) = download.startDirect(options, build, wifiOnly)
+
     val downloadState: Flow<DownloadState> = download.state
 
     suspend fun loadManifest(baseUrl: String): Manifest {
@@ -70,3 +92,5 @@ class SetupInteractor @Inject constructor(
     /** Einrichtung ohne Download überspringen (z. B. Pakete schon per USB kopiert). */
     suspend fun skip() = settings.update { it.copy(setupDone = true) }
 }
+
+data class DirectCheck(val estimate: DirectEstimate, val freeBytes: Long, val fits: Boolean, val requiredBytes: Long)

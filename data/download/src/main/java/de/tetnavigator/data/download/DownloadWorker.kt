@@ -28,9 +28,11 @@ class DownloadWorker @AssistedInject constructor(
     private val settings: SettingsRepository,
     private val storage: OfflineStorage,
     private val downloader: PackageDownloader,
+    private val direct: DirectInstaller,
 ) : CoroutineWorker(context, params) {
 
     override suspend fun doWork(): Result {
+        if (inputData.getString(KEY_MODE) == MODE_DIRECT) return doDirect()
         val countries = inputData.getStringArray(KEY_COUNTRIES)?.toSet().orEmpty()
         val s = settings.current()
         if (!settings.networkAllowed()) return fail(OfflineLockedException().message!!)
@@ -85,6 +87,34 @@ class DownloadWorker @AssistedInject constructor(
         return Result.success()
     }
 
+    /** Einrichtung ohne PC: alles direkt aus öffentlichen Quellen. */
+    private suspend fun doDirect(): Result {
+        if (!settings.networkAllowed()) return fail(OfflineLockedException().message!!)
+        val opts = DirectOptions(
+            countries = inputData.getStringArray(KEY_COUNTRIES)?.toSet().orEmpty(),
+            maxZoom = inputData.getInt(KEY_MAX_ZOOM, 13),
+            dem = inputData.getBoolean(KEY_DEM, true),
+        )
+        try { setForeground(foregroundInfo("Starte…", 0, 0)) } catch (_: Exception) { }
+        var lastPct = -1
+        try {
+            direct.install(opts, inputData.getString(KEY_BUILD)) { p ->
+                val pct = (p.fraction * 100).toInt()
+                if (pct != lastPct || p.bytesTotal > 0) {
+                    setProgressAsync(workDataOf(P_FILE to p.step, P_INDEX to 0, P_COUNT to 0, P_DONE to p.bytesDone, P_TOTAL to p.bytesTotal, P_FRACTION to p.fraction))
+                    if (pct != lastPct) notify(foregroundInfo(p.step, pct, 100))
+                    lastPct = pct
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            return if (runAttemptCount < 3 && e !is OfflineLockedException) Result.retry() else fail(e.message ?: "Download-Fehler")
+        }
+        settings.lockOffline(storage.installedCountries())
+        return Result.success()
+    }
+
     private fun fail(msg: String) = Result.failure(workDataOf(KEY_ERROR to msg))
 
     private fun notify(info: ForegroundInfo) {
@@ -110,6 +140,12 @@ class DownloadWorker @AssistedInject constructor(
 
     companion object {
         const val KEY_COUNTRIES = "countries"
+        const val KEY_MODE = "mode"
+        const val MODE_DIRECT = "direct"
+        const val KEY_MAX_ZOOM = "maxZoom"
+        const val KEY_DEM = "dem"
+        const val KEY_BUILD = "build"
+        const val P_FRACTION = "fraction"
         const val KEY_ERROR = "error"
         const val P_FILE = "file"
         const val P_INDEX = "index"

@@ -7,8 +7,9 @@ import java.util.concurrent.TimeUnit
 internal object HttpClients {
     fun create(policy: NetworkPolicy): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(OfflineGuardInterceptor(policy))
+        .addInterceptor { chain -> chain.proceed(chain.request().newBuilder().header("User-Agent", DirectSources.USER_AGENT).build()) }
         .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(90, TimeUnit.SECONDS)
         .retryOnConnectionFailure(true)
         .followRedirects(true)
         .build()

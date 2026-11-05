@@ -40,7 +40,13 @@ class OfflineStorage @Inject constructor(@ApplicationContext private val context
     fun installedCountries(): Set<String> = _registry.value.packages.map { it.country }.toSet()
 
     fun mapFiles() = installed(PackageType.MAP)
+    fun protomapsFiles() = installed(PackageType.MAP_PROTOMAPS)
     fun hillshadeFiles() = installed(PackageType.HILLSHADE)
+    fun terrariumFiles() = installed(PackageType.DEM_TERRARIUM)
+    fun hasAnyMap() = mapFiles().isNotEmpty() || protomapsFiles().isNotEmpty()
+
+    /** Arbeitsverzeichnis für unterbrochene Direkt-Downloads. */
+    fun workDir(name: String): File = File(root, ".work/$name").apply { mkdirs() }
     fun contourFiles() = installed(PackageType.CONTOURS)
     fun poiFiles() = installed(PackageType.POI)
     fun hasRouting() = installed(PackageType.ROUTING).isNotEmpty()

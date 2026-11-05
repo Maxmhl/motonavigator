@@ -1,0 +1,22 @@
+# TET-Match-Profil (TET Navigator): folgt vorgegebenen Wegpunkten auf jedem Weg,
+# nur zum Ermitteln der OSM-Belag-Tags entlang eines Tracks (keine Navigation).
+---context:global
+assign processUnusedTags = true
+assign validForBikes 1
+assign validForCars 1
+assign validForFoot 1
+assign turnInstructionMode = 0
+assign downhillcost 0
+assign downhillcutoff 0
+assign uphillcost 0
+assign uphillcutoff 0
+
+---context:way
+assign dummyUsage = and surface= and tracktype= smoothness=
+assign turncost 0
+assign initialclassifier 0
+assign initialcost 0
+assign costfactor switch highway= 10000 1
+
+---context:node
+assign initialcost 0

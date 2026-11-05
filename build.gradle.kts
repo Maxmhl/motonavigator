@@ -122,6 +122,11 @@ subprojects {
         providers.gradleProperty("robolectricRepoUrl").orNull?.let {
             systemProperty("robolectric.dependency.repo.url", it)
         }
+        // Optional: echte BRouter-Segmente für den Routing-Integrationstest (-PtetSegmentsDir=…)
+        providers.gradleProperty("tetSegmentsDir").orNull?.let { systemProperty("tet.segments", it) }
+        // Optional: Live-Test gegen die öffentlichen Quellen (-PtetLiveOut=/ausgabeordner)
+        providers.gradleProperty("tetLiveOut").orNull?.let { systemProperty("tet.live.out", it) }
+        providers.gradleProperty("tetLiveSizes").orNull?.let { systemProperty("tet.live.sizes", it) }
         maxHeapSize = "2g"
     }
 }

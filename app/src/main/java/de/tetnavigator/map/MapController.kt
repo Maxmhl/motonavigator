@@ -41,6 +41,21 @@ class MapController(private val map: MapLibreMap, private val density: Float) {
 
     fun onStyle(s: Style, c: TetColors) {
         style = s; colors = c
+        // Höhenlinien unter die ersten Beschriftungen legen
+        val firstSymbol = s.layers.firstOrNull { it is SymbolLayer }?.id
+        s.addSource(GeoJsonSource(SRC_CONTOURS, FeatureCollection.fromFeatures(emptyList())))
+        val contour = LineLayer("contours-live", SRC_CONTOURS).withProperties(PropertyFactory.lineColor(c.contour.toArgb()), PropertyFactory.lineWidth(1.1f))
+            .withFilter(Expression.neq(Expression.get("index"), Expression.literal(true)))
+        val index = LineLayer("contours-live-index", SRC_CONTOURS).withProperties(PropertyFactory.lineColor(c.outline.toArgb()), PropertyFactory.lineWidth(1.8f))
+            .withFilter(Expression.eq(Expression.get("index"), Expression.literal(true)))
+        val label = SymbolLayer("contours-live-label", SRC_CONTOURS).withProperties(
+            PropertyFactory.symbolPlacement(Property.SYMBOL_PLACEMENT_LINE),
+            PropertyFactory.textField(Expression.concat(Expression.toString(Expression.get("ele")), Expression.literal(" m"))),
+            PropertyFactory.textFont(arrayOf(MapStyleBuilder.FONT)), PropertyFactory.textSize(10f),
+            PropertyFactory.textColor(c.sand.toArgb()), PropertyFactory.textHaloColor(c.bg.toArgb()), PropertyFactory.textHaloWidth(1.2f),
+        ).withFilter(Expression.eq(Expression.get("index"), Expression.literal(true)))
+        if (firstSymbol != null) { s.addLayerBelow(contour, firstSymbol); s.addLayerBelow(index, firstSymbol) } else { s.addLayer(contour); s.addLayer(index) }
+        s.addLayer(label)
         addImages(s, c)
         val empty = FeatureCollection.fromFeatures(emptyList())
         for (id in listOf(SRC_TRACK, SRC_RIDDEN, SRC_CHANGED, SRC_SURFACE, SRC_AUX, SRC_HAZARD, SRC_POI, SRC_POS, SRC_ALL_TRACKS)) {
@@ -152,6 +167,25 @@ class MapController(private val map: MapLibreMap, private val density: Float) {
         src(SRC_POI)?.setGeoJson(FeatureCollection.fromFeatures(f))
     }
 
+    /** Live berechnete Höhenlinien anzeigen (jede 5. Linie als Index-Linie mit Beschriftung). */
+    fun setContours(lines: List<de.tetnavigator.map.ContourLine>, interval: Int) {
+        val f = lines.map { l ->
+            Feature.fromGeometry(LineString.fromLngLats(l.lon.indices.map { Point.fromLngLat(l.lon[it], l.lat[it]) })).apply {
+                addNumberProperty("ele", l.elevation)
+                addBooleanProperty("index", l.elevation % (interval * 5) == 0)
+            }
+        }
+        src(SRC_CONTOURS)?.setGeoJson(FeatureCollection.fromFeatures(f))
+    }
+
+    /** Sichtbarer Ausschnitt (minLon, minLat, maxLon, maxLat) und Zoom. */
+    fun visibleRegion(): Pair<DoubleArray, Double> {
+        val b = map.projection.visibleRegion.latLngBounds
+        return doubleArrayOf(b.longitudeWest, b.latitudeSouth, b.longitudeEast, b.latitudeNorth) to map.cameraPosition.zoom
+    }
+
+    fun onCameraIdle(block: () -> Unit) = map.addOnCameraIdleListener { block() }
+
     fun setPosition(lat: Double, lon: Double, bearing: Float) {
         src(SRC_POS)?.setGeoJson(Feature.fromGeometry(Point.fromLngLat(lon, lat)).apply { addNumberProperty("b", bearing) })
     }
@@ -242,6 +276,7 @@ class MapController(private val map: MapLibreMap, private val density: Float) {
         const val SRC_POI = "tet-poi"
         const val SRC_POS = "tet-pos"
         const val SRC_ALL_TRACKS = "tet-all"
+        const val SRC_CONTOURS = "tet-contours"
         const val IMG_ARROW = "pos-arrow"
         const val IMG_HAZARD_YELLOW = "hazard-y"
         const val IMG_HAZARD_RED = "hazard-r"

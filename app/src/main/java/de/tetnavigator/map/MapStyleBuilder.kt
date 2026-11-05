@@ -32,12 +32,19 @@ object MapStyleBuilder {
         hillshade: List<Pair<String, File>>,
         contours: List<Pair<String, File>>,
         layers: MapLayers,
+        protomaps: List<Pair<String, File>> = emptyList(),
+        terrarium: List<Pair<String, File>> = emptyList(),
     ): String {
         val sources = JSONObject()
         val out = JSONArray()
         val c = Palette.of(colors)
 
-        out.put(layer("background", "background").put("paint", JSONObject().put("background-color", c.bg)))
+        // Protomaps-Karten haben eine eigene Landfläche („earth“) → Hintergrund = Wasser
+        out.put(layer("background", "background").put("paint", JSONObject().put("background-color", if (protomaps.isNotEmpty() && maps.isEmpty()) c.water else c.bg)))
+        protomaps.forEach { (cc, f) ->
+            sources.put("pm-$cc", JSONObject().put("type", "vector").put("url", pm(f)))
+            protomapsBase(out, "pm-$cc", cc, c)
+        }
 
         // Schummerung zuerst (unter allem anderen)
         if (layers.hillshade) hillshade.forEach { (cc, f) ->
@@ -54,6 +61,23 @@ object MapStyleBuilder {
                 ),
             )
         }
+
+        // Schummerung aus Terrarium-Höhendaten (Direkt-Download)
+        if (layers.hillshade) terrarium.forEach { (cc, f) ->
+            val id = "terrarium-$cc"
+            sources.put(id, JSONObject().put("type", "raster-dem").put("url", pm(f)).put("tileSize", 256).put("encoding", "terrarium").put("maxzoom", 10))
+            out.put(
+                layer("hillshade-t-$cc", "hillshade").put("source", id).put(
+                    "paint",
+                    JSONObject()
+                        .put("hillshade-shadow-color", c.shadow)
+                        .put("hillshade-highlight-color", c.highlight)
+                        .put("hillshade-accent-color", c.shadow)
+                        .put("hillshade-exaggeration", 0.4),
+                ),
+            )
+        }
+        protomaps.forEach { (cc, _) -> protomapsRoads(out, "pm-$cc", cc, c) }
 
         maps.forEach { (cc, f) ->
             val src = "map-$cc"
@@ -85,6 +109,7 @@ object MapStyleBuilder {
 
         // Ortsnamen ganz oben
         maps.forEach { (cc, _) -> labelLayers(out, "map-$cc", cc, c) }
+        protomaps.forEach { (cc, _) -> protomapsLabels(out, "pm-$cc", cc, c) }
 
         return JSONObject()
             .put("version", 8)
@@ -152,6 +177,94 @@ object MapStyleBuilder {
             layer("boundary-$cc", "line").put("source", src).put("source-layer", "boundary")
                 .put("filter", JSONArray("[\"<=\", [\"get\", \"admin_level\"], 2]"))
                 .put("paint", JSONObject().put("line-color", c.boundary).put("line-width", 1.5).put("line-dasharray", JSONArray("[4, 2]"))),
+        )
+    }
+
+    // --- Protomaps-Basemap-Schema (earth, water, landcover, landuse, roads, boundaries, places, pois) ---
+
+    private fun protomapsBase(out: JSONArray, src: String, cc: String, c: Palette) {
+        fun fill(id: String, srcLayer: String, color: String, filter: String? = null, opacity: Double = 1.0, minzoom: Int = 0) =
+            out.put(layer("pm-$id-$cc", "fill").put("source", src).put("source-layer", srcLayer).put("minzoom", minzoom)
+                .put("paint", JSONObject().put("fill-color", color).put("fill-opacity", opacity))
+                .apply { if (filter != null) put("filter", JSONArray(filter)) })
+        fill("earth", "earth", c.bg, "[\"==\", [\"get\", \"kind\"], \"earth\"]")
+        fill("forest", "landcover", c.wood, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"forest\"]]]")
+        fill("grass", "landcover", c.grass, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"grassland\", \"farmland\", \"scrub\"]]]", 0.6)
+        fill("barren", "landcover", c.rock, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"barren\"]]]", 0.6)
+        fill("glacier", "landcover", c.ice, "[\"==\", [\"get\", \"kind\"], \"glacier\"]")
+        fill("lu-wood", "landuse", c.wood, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"forest\", \"wood\", \"nature_reserve\"]]]", 0.8)
+        fill("lu-green", "landuse", c.grass, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"park\", \"grass\", \"grassland\", \"meadow\", \"farmland\", \"scrub\", \"heath\"]]]", 0.5)
+        fill("lu-wet", "landuse", c.wet, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"wetland\", \"marsh\", \"bog\"]]]", 0.7)
+        fill("lu-rock", "landuse", c.rock, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"rock\", \"bare_rock\", \"scree\", \"sand\", \"beach\", \"quarry\"]]]", 0.7)
+        fill("lu-ice", "landuse", c.ice, "[\"==\", [\"get\", \"kind\"], \"glacier\"]")
+        fill("lu-urban", "landuse", c.urban, "[\"in\", [\"get\", \"kind\"], [\"literal\", [\"residential\", \"industrial\", \"commercial\", \"retail\", \"neighbourhood\"]]]", 0.8)
+        fill("water", "water", c.water, "[\"match\", [\"geometry-type\"], [\"Polygon\", \"MultiPolygon\"], true, false]")
+        out.put(
+            layer("pm-waterway-$cc", "line").put("source", src).put("source-layer", "water")
+                .put("filter", JSONArray("[\"match\", [\"geometry-type\"], [\"LineString\", \"MultiLineString\"], true, false]"))
+                .put("paint", JSONObject().put("line-color", c.water).put("line-width", zoom(8, 0.5, 16, 3.0))),
+        )
+        fill("buildings", "buildings", c.building, null, 0.9, 13)
+    }
+
+    private fun protomapsRoads(out: JSONArray, src: String, cc: String, c: Palette) {
+        fun road(id: String, filter: String, color: String, w1: Double, w2: Double, dash: String? = null, minzoom: Int = 0, casing: String? = null) {
+            if (casing != null) {
+                out.put(
+                    layer("pm-$id-case-$cc", "line").put("source", src).put("source-layer", "roads").put("minzoom", minzoom)
+                        .put("filter", JSONArray(filter))
+                        .put("layout", JSONObject().put("line-cap", "round").put("line-join", "round"))
+                        .put("paint", JSONObject().put("line-color", casing).put("line-width", zoom(8, w1 + 1, 18, w2 + 3))),
+                )
+            }
+            out.put(
+                layer("pm-$id-$cc", "line").put("source", src).put("source-layer", "roads").put("minzoom", minzoom)
+                    .put("filter", JSONArray(filter))
+                    .put("layout", JSONObject().put("line-cap", if (dash == null) "round" else "butt").put("line-join", "round"))
+                    .put("paint", JSONObject().put("line-color", color).put("line-width", zoom(8, w1, 18, w2)).apply {
+                        if (dash != null) put("line-dasharray", JSONArray(dash))
+                    }),
+            )
+        }
+        val kd = "[\"get\", \"kind_detail\"]"
+        val k = "[\"get\", \"kind\"]"
+        road("path", "[\"in\", $kd, [\"literal\", [\"path\", \"footway\", \"bridleway\", \"cycleway\"]]]", c.path, 0.5, 1.5, "[2, 2]", 13)
+        road("track", "[\"==\", $kd, \"track\"]", c.track, 0.8, 3.0, "[3, 1.5]", 11)
+        road("minor", "[\"all\", [\"==\", $k, \"minor_road\"], [\"!=\", $kd, \"track\"]]", c.minor, 0.6, 5.0, null, 10)
+        road("medium", "[\"==\", $k, \"medium_road\"]", c.secondary, 0.8, 7.0, null, 7, c.bg)
+        road("major", "[\"==\", $k, \"major_road\"]", c.primary, 1.0, 9.0, null, 5, c.bg)
+        road("highway", "[\"==\", $k, \"highway\"]", c.motorway, 1.2, 10.0, null, 4, c.bg)
+        road("ferry", "[\"==\", $k, \"ferry\"]", c.water2, 0.8, 2.0, "[3, 3]", 6)
+        out.put(
+            layer("pm-boundary-$cc", "line").put("source", src).put("source-layer", "boundaries")
+                .put("filter", JSONArray("[\"==\", $k, \"country\"]"))
+                .put("paint", JSONObject().put("line-color", c.boundary).put("line-width", 1.5).put("line-dasharray", JSONArray("[4, 2]"))),
+        )
+    }
+
+    private fun protomapsLabels(out: JSONArray, src: String, cc: String, c: Palette) {
+        val name = "[\"coalesce\", [\"get\", \"name:de\"], [\"get\", \"name\"]]"
+        out.put(
+            layer("pm-road-label-$cc", "symbol").put("source", src).put("source-layer", "roads").put("minzoom", 13)
+                .put("layout", JSONObject().put("symbol-placement", "line").put("text-field", JSONArray("[\"get\", \"name\"]"))
+                    .put("text-font", JSONArray().put(FONT)).put("text-size", 11))
+                .put("paint", JSONObject().put("text-color", c.label2).put("text-halo-color", c.bg).put("text-halo-width", 1.5)),
+        )
+        out.put(
+            layer("pm-peak-$cc", "symbol").put("source", src).put("source-layer", "pois").put("minzoom", 11)
+                .put("filter", JSONArray("[\"==\", [\"get\", \"kind\"], \"peak\"]"))
+                .put("layout", JSONObject().put("text-field", JSONArray("[\"concat\", \"▲ \", [\"coalesce\", [\"get\", \"name\"], \"\"], \" \", [\"to-string\", [\"coalesce\", [\"get\", \"elevation\"], \"\"]]]"))
+                    .put("text-font", JSONArray().put(FONT)).put("text-size", 11).put("text-anchor", "top"))
+                .put("paint", JSONObject().put("text-color", c.label2).put("text-halo-color", c.bg).put("text-halo-width", 1.2)),
+        )
+        out.put(
+            layer("pm-place-$cc", "symbol").put("source", src).put("source-layer", "places")
+                .put("filter", JSONArray("[\"all\", [\"==\", [\"get\", \"kind\"], \"locality\"], [\"in\", [\"get\", \"kind_detail\"], [\"literal\", [\"city\", \"town\", \"village\", \"hamlet\"]]]]"))
+                .put("layout", JSONObject().put("text-field", JSONArray(name))
+                    .put("text-font", JSONArray().put(FONT_BOLD))
+                    .put("text-size", JSONArray("[\"match\", [\"get\", \"kind_detail\"], \"city\", 16, \"town\", 14, \"village\", 12, 11]"))
+                    .put("text-transform", "uppercase").put("text-letter-spacing", 0.08))
+                .put("paint", JSONObject().put("text-color", c.label).put("text-halo-color", c.bg).put("text-halo-width", 1.6)),
         )
     }
 
